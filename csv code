@@ -1,0 +1,197 @@
+import csv
+import os
+from datetime import datetime
+
+FILE_NAME = "expenses.csv"
+
+# Create CSV file if it does not exist
+def initialize_file():
+    if not os.path.exists(FILE_NAME):
+        with open(FILE_NAME, "w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["Date", "Category", "Description", "Amount"])
+
+
+# Add a new expense
+def add_expense():
+    date = input("Enter date (YYYY-MM-DD): ")
+
+    try:
+        datetime.strptime(date, "%Y-%m-%d")
+        category = input("Enter category: ")
+        description = input("Enter description: ")
+        amount = float(input("Enter amount: "))
+
+        if amount <= 0:
+            print("Amount must be positive.")
+            return
+
+        with open(FILE_NAME, "a", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow([date, category, description, amount])
+
+        print("Expense added successfully!")
+
+    except ValueError:
+        print("Invalid date or amount!")
+
+
+# View all expenses
+def view_expenses():
+    with open(FILE_NAME, "r", newline="") as file:
+        reader = csv.DictReader(file)
+
+        print("\n----- ALL EXPENSES -----")
+
+        found = False
+        for row in reader:
+            found = True
+            print(
+                f"Date: {row['Date']} | "
+                f"Category: {row['Category']} | "
+                f"Description: {row['Description']} | "
+                f"Amount: Rs.{float(row['Amount']):.2f}"
+            )
+
+        if not found:
+            print("No expenses found.")
+
+
+# Filter expenses by category
+def filter_by_category():
+    category = input("Enter category to filter: ").strip().lower()
+    found = False
+
+    with open(FILE_NAME, "r", newline="") as file:
+        reader = csv.DictReader(file)
+
+        print("\n----- FILTERED EXPENSES -----")
+
+        for row in reader:
+            if row["Category"].lower() == category:
+                found = True
+                print(row)
+
+    if not found:
+        print("No expenses found in this category.")
+
+
+# Filter expenses by date
+def filter_by_date():
+    date = input("Enter date (YYYY-MM-DD): ")
+    found = False
+
+    with open(FILE_NAME, "r", newline="") as file:
+        reader = csv.DictReader(file)
+
+        for row in reader:
+            if row["Date"] == date:
+                found = True
+                print(row)
+
+    if not found:
+        print("No expenses found for this date.")
+
+
+# Search expenses by description
+def search_expenses():
+    keyword = input("Enter description keyword: ").lower()
+    found = False
+
+    with open(FILE_NAME, "r", newline="") as file:
+        reader = csv.DictReader(file)
+
+        for row in reader:
+            if keyword in row["Description"].lower():
+                found = True
+                print(row)
+
+    if not found:
+        print("No matching expenses found.")
+
+
+# Calculate total expenses
+def total_expenses():
+    total = 0
+
+    with open(FILE_NAME, "r", newline="") as file:
+        reader = csv.DictReader(file)
+
+        for row in reader:
+            total += float(row["Amount"])
+
+    print(f"\nTotal Expenses: Rs.{total:.2f}")
+
+
+# Category-wise summary
+def category_summary():
+    summary = {}
+
+    with open(FILE_NAME, "r", newline="") as file:
+        reader = csv.DictReader(file)
+
+        for row in reader:
+            category = row["Category"]
+            amount = float(row["Amount"])
+
+            if category in summary:
+                summary[category] += amount
+            else:
+                summary[category] = amount
+
+    print("\n----- CATEGORY SUMMARY -----")
+
+    if not summary:
+        print("No expenses available.")
+        return
+
+    for category, amount in summary.items():
+        print(f"{category}: Rs.{amount:.2f}")
+
+    print("----------------------------")
+    print(f"Total: Rs.{sum(summary.values()):.2f}")
+    print(f"Number of categories: {len(summary)}")
+
+
+# Main menu
+def main():
+    initialize_file()
+
+    while True:
+        print("\n================================")
+        print("     PERSONAL EXPENSE TRACKER")
+        print("================================")
+        print("1. Add Expense")
+        print("2. View All Expenses")
+        print("3. Filter by Category")
+        print("4. Filter by Date")
+        print("5. Search by Description")
+        print("6. Total Expenses")
+        print("7. Category Summary")
+        print("8. Exit")
+
+        choice = input("\nEnter your choice: ")
+
+        if choice == "1":
+            add_expense()
+        elif choice == "2":
+            view_expenses()
+        elif choice == "3":
+            filter_by_category()
+        elif choice == "4":
+            filter_by_date()
+        elif choice == "5":
+            search_expenses()
+        elif choice == "6":
+            total_expenses()
+        elif choice == "7":
+            category_summary()
+        elif choice == "8":
+            print("Thank you for using Expense Tracker!")
+            break
+        else:
+            print("Invalid choice! Please try again.")
+
+
+if __name__ == "__main__":
+    main()
